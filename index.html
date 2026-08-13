@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STATION // HUD</title>
+<style>
+  :root {
+    --bg: #0a0d0f;
+    --panel: #101513;
+    --line: #1e2b24;
+    --green: #3ef2a1;
+    --green-dim: #1d6b4d;
+    --amber: #ffb54a;
+    --text: #d8e6de;
+    --text-dim: #6c8079;
+    --red: #ff5c5c;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(62,242,161,0.04), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(255,181,74,0.03), transparent 40%);
+    color: var(--text);
+    font-family: 'JetBrains Mono', 'Space Mono', 'Fira Code', monospace;
+    min-height: 100vh;
+    padding: 24px 16px;
+    display: flex;
+    justify-content: center;
+  }
+  .wrap {
+    width: 100%;
+    max-width: 960px;
+  }
+  .topline {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 12px;
+    margin-bottom: 22px;
+    letter-spacing: 2px;
+  }
+  .topline .brand {
+    color: var(--green);
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .topline .sub {
+    color: var(--text-dim);
+    font-size: 11px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 700px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+  .panel {
+    position: relative;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    padding: 18px 20px;
+  }
+  .panel::before, .panel::after,
+  .panel .c2::before, .panel .c2::after {
+    content: "";
+    position: absolute;
+    width: 10px; height: 10px;
+    border: 2px solid var(--green-dim);
+  }
+  .panel::before { top: -1px; left: -1px; border-right: none; border-bottom: none; }
+  .panel::after { top: -1px; right: -1px; border-left: none; border-bottom: none; }
+  .panel .c2::before { bottom: -1px; left: -1px; border-right: none; border-top: none; }
+  .panel .c2::after { bottom: -1px; right: -1px; border-left: none; border-top: none; }
+
+  .label {
+    color: var(--text-dim);
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .clock-panel .time {
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--green);
+    letter-spacing: 2px;
+    line-height: 1;
+    text-shadow: 0 0 18px rgba(62,242,161,0.3);
+  }
+  .clock-panel .time .blink { animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .clock-panel .date {
+    margin-top: 8px;
+    font-size: 13px;
+    color: var(--text);
+  }
+  .clock-panel .day {
+    margin-top: 3px;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .tz-row {
+    margin-top: 14px;
+    display: flex;
+    gap: 16px;
+    font-size: 11px;
+    color: var(--text-dim);
+    border-top: 1px dashed var(--line);
+    padding-top: 12px;
+  }
+  .tz-row span b { color: var(--text); font-weight: normal; }
+
+  .weather-body {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-top: 12px;
+  }
+  .temp-big {
+    font-size: 42px;
+    font-weight: 700;
+    color: var(--amber);
+    line-height: 1;
+    text-shadow: 0 0 14px rgba(255,181,74,0.25);
+  }
+  .cond {
+    font-size: 12px;
+    color: var(--text);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .loc-name {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+  .stat-row {
+    margin-top: 14px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    border-top: 1px dashed var(--line);
+    padding-top: 12px;
+  }
+  .stat {
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .stat b {
+    display: block;
+    font-size: 14px;
+    color: var(--text);
+    font-weight: 700;
+    margin-top: 3px;
+    letter-spacing: 0;
+  }
+  .status-line {
+    margin-top: 8px;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+  }
+  .status-line .dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    margin-right: 6px;
+    box-shadow: 0 0 6px var(--green);
+  }
+  .status-line.err { color: var(--red); }
+
+  .projects-panel {
+    grid-column: 1 / -1;
+  }
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    margin-top: 6px;
+  }
+  .project-card {
+    background: #0d1210;
+    border: 1px solid var(--line);
+    padding: 14px 16px;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s, background 0.15s;
+    display: block;
+  }
+  .project-card:hover {
+    border-color: var(--green-dim);
+    background: rgba(62,242,161,0.04);
+  }
+  .project-card .pc-title {
+    color: var(--green);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .project-card .pc-desc {
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.4;
+  }
+  .project-card .pc-tag {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 9px;
+    letter-spacing: 1px;
+    color: var(--amber);
+    text-transform: uppercase;
+  }
+
+  .about-panel {
+    grid-column: 1 / -1;
+  }
+  .about-text {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--text);
+  }
+  .about-text p + p { margin-top: 10px; }
+  .links-row {
+    margin-top: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .link-btn {
+    background: transparent;
+    border: 1px solid var(--green-dim);
+    color: var(--green);
+    font-family: inherit;
+    font-size: 11px;
+    letter-spacing: 1px;
+    padding: 8px 14px;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: background 0.15s;
+  }
+  .link-btn:hover {
+    background: rgba(62,242,161,0.08);
+  }
+
+  .footer {
+    margin-top: 24px;
+    text-align: center;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topline">
+    <div class="brand">// STATION_HUD</div>
+    <div class="sub" id="statusClock">SYNCING...</div>
+  </div>
+
+  <div class="grid">
+
+    <div class="panel clock-panel">
+      <div class="c2"></div>
+      <div class="label">Local Time</div>
+      <div class="time" id="timeDisplay">00:00<span class="blink">:00</span></div>
+      <div class="date" id="dateDisplay">-- -- ----</div>
+      <div class="day" id="dayDisplay">-</div>
+      <div class="tz-row">
+        <span>TZ <b id="tzName">-</b></span>
+        <span>UTC <b id="utcOffset">-</b></span>
+      </div>
+    </div>
+
+    <div class="panel weather-panel">
+      <div class="c2"></div>
+      <div class="label">Weather Feed</div>
+      <div class="weather-body">
+        <div class="temp-big" id="tempDisplay">--°</div>
+        <div>
+          <div class="cond" id="condDisplay">ACQUIRING...</div>
+          <div class="loc-name" id="locDisplay">Brantford, Ontario</div>
+        </div>
+      </div>
+      <div class="stat-row">
+        <div class="stat">Feels Like<b id="feelsDisplay">--</b></div>
+        <div class="stat">Humidity<b id="humidDisplay">--</b></div>
+        <div class="stat">Wind<b id="windDisplay">--</b></div>
+      </div>
+      <div class="status-line" id="weatherStatus"><span class="dot"></span>CONNECTING...</div>
+    </div>
+
+    <div class="panel projects-panel">
+      <div class="c2"></div>
+      <div class="label">Projects // Modules</div>
+      <div class="projects-grid">
+
+        <a class="project-card" href="https://bossmancom.github.io/pixel-fox-runner/" target="_blank">
+          <div class="pc-title">PIXEL FOX RUNNER</div>
+          <div class="pc-desc">8-bit infinite runner starring Ani. Jump, collect, survive.</div>
+          <div class="pc-tag">Canvas Game</div>
+        </a>
+
+        <a class="project-card" href="https://bossmancom.github.io/classic-snake/" target="_blank">
+          <div class="pc-title">CLASSIC SNAKE</div>
+          <div class="pc-desc">Clean Snake with tight controls and solid feel.</div>
+          <div class="pc-tag">Canvas Game</div>
+        </a>
+
+        <a class="project-card" href="https://bossmancom.github.io/ani-adventure/" target="_blank">
+          <div class="pc-title">ANI ADVENTURE</div>
+          <div class="pc-desc">Click-based 2D adventure with Ani the foxgirl.</div>
+          <div class="pc-tag">Adventure</div>
+        </a>
+
+        <a class="project-card" href="https://bossmancom.github.io/tower_defender_1/" target="_blank">
+          <div class="pc-title">TOWER DEFENDER</div>
+          <div class="pc-desc">Tower defense prototype. Place units, hold the line.</div>
+          <div class="pc-tag">Strategy</div>
+        </a>
+
+        <a class="project-card" href="https://bossmancom.github.io/kiitsune_blackjack/" target="_blank">
+          <div class="pc-title">KITSUNE BLACKJACK</div>
+          <div class="pc-desc">Blackjack with a kitsune twist.</div>
+          <div class="pc-tag">Card Game</div>
+        </a>
+
+        <a class="project-card" href="https://bossmancom.github.io/scary-classroom-hide-seek/" target="_blank">
+          <div class="pc-title">SCARY CLASSROOM</div>
+          <div class="pc-desc">Low-poly hide-and-seek horror. Three.js.</div>
+          <div class="pc-tag">Horror</div>
+        </a>
+
+        <a class="project-card" href="https://bossmancom.github.io/station-hud/" target="_blank">
+          <div class="pc-title">STATION HUD</div>
+          <div class="pc-desc">Full cyberpunk dashboard — clock, weather, vault, recon.</div>
+          <div class="pc-tag">Tool</div>
+        </a>
+
+        <a class="project-card" href="https://bossmancom.github.io/soft-night-screensaver/" target="_blank">
+          <div class="pc-title">SOFT NIGHT</div>
+          <div class="pc-desc">Quiet A-Frame screensaver with floating lanterns and fog.</div>
+          <div class="pc-tag">Visual</div>
+        </a>
+
+      </div>
+    </div>
+
+    <div class="panel about-panel">
+      <div class="c2"></div>
+      <div class="label">Status // About</div>
+      <div class="about-text">
+        <p>Building small games, tools, and AI experiments. Most of it lives in pure HTML/JS so it runs anywhere.</p>
+        <p>Currently focused on foxgirl-themed projects, short-form AI video, and keeping the station online.</p>
+      </div>
+      <div class="links-row">
+        <a class="link-btn" href="https://x.com/BossmanCom74811" target="_blank">X / Twitter</a>
+        <a class="link-btn" href="https://github.com/BossmanCom" target="_blank">GitHub</a>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">STATION ONLINE · DATA: OPEN-METEO · NO TRACKING</div>
+</div>
+
+<script>
+function pad(n){ return n.toString().padStart(2,'0'); }
+
+function updateClock(){
+  const now = new Date();
+  const h = pad(now.getHours());
+  const m = pad(now.getMinutes());
+  const s = pad(now.getSeconds());
+  document.getElementById('timeDisplay').innerHTML = `${h}:${m}<span class="blink">:${s}</span>`;
+
+  document.getElementById('dateDisplay').textContent = now.toLocaleDateString(undefined, { year:'numeric', month:'short', day:'2-digit' });
+  document.getElementById('dayDisplay').textContent = now.toLocaleDateString(undefined, { weekday:'long' });
+
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  document.getElementById('tzName').textContent = tz;
+
+  const offsetMin = -now.getTimezoneOffset();
+  const sign = offsetMin >= 0 ? '+' : '-';
+  const offH = pad(Math.floor(Math.abs(offsetMin)/60));
+  const offM = pad(Math.abs(offsetMin)%60);
+  document.getElementById('utcOffset').textContent = `${sign}${offH}:${offM}`;
+
+  document.getElementById('statusClock').textContent = 'SYSTEM TIME OK';
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+const weatherCodeMap = {
+  0:"CLEAR SKY", 1:"MOSTLY CLEAR", 2:"PARTLY CLOUDY", 3:"OVERCAST",
+  45:"FOG", 48:"FREEZING FOG",
+  51:"LIGHT DRIZZLE", 53:"DRIZZLE", 55:"DENSE DRIZZLE",
+  61:"LIGHT RAIN", 63:"RAIN", 65:"HEAVY RAIN",
+  71:"LIGHT SNOW", 73:"SNOW", 75:"HEAVY SNOW",
+  80:"LIGHT SHOWERS", 81:"SHOWERS", 82:"VIOLENT SHOWERS",
+  95:"THUNDERSTORM", 96:"THUNDERSTORM W/ HAIL", 99:"SEVERE THUNDERSTORM"
+};
+
+async function loadWeather(){
+  const status = document.getElementById('weatherStatus');
+  try {
+    const lat = 43.1394, lon = -80.2644;
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m,weather_code&timezone=auto`;
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('forecast failed');
+    const data = await res.json();
+    const c = data.current;
+
+    const temp = Math.round(c.temperature_2m);
+    const feels = Math.round(c.apparent_temperature);
+
+    document.getElementById('tempDisplay').textContent = `${temp}°C`;
+    document.getElementById('feelsDisplay').textContent = `${feels}°C`;
+    document.getElementById('humidDisplay').textContent = `${Math.round(c.relative_humidity_2m)}%`;
+    document.getElementById('windDisplay').textContent = `${Math.round(c.wind_speed_10m)} km/h`;
+    document.getElementById('condDisplay').textContent = weatherCodeMap[c.weather_code] || 'UNKNOWN';
+    document.getElementById('locDisplay').textContent = 'Brantford, Ontario, Canada';
+
+    status.innerHTML = '<span class="dot"></span>LIVE — OPEN-METEO';
+    status.classList.remove('err');
+  } catch(err) {
+    status.textContent = 'SIGNAL LOST';
+    status.classList.add('err');
+  }
+}
+loadWeather();
+setInterval(loadWeather, 10 * 60 * 1000);
+</script>
+</body>
+</html>
