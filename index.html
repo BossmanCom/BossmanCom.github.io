@@ -1,1 +1,147 @@
-PLACEHOLDER
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BOSSMAN // STATION</title>
+<style>
+:root{--bg:#0a0d0f;--panel:#101513;--line:#1e2b24;--green:#3ef2a1;--green-dim:#1d6b4d;--amber:#ffb54a;--text:#d8e6de;--text-dim:#6c8079;--red:#ff5c5c}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'JetBrains Mono','Fira Code',monospace;min-height:100vh;padding:24px 16px;display:flex;justify-content:center}
+.wrap{width:100%;max-width:980px}
+.topline{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:22px;letter-spacing:2px}
+h1.brand{color:var(--green);font-size:14px;font-weight:700;margin:0}
+.sub{color:var(--text-dim);font-size:11px}
+.hero-play{display:flex;flex-wrap:wrap;gap:10px;margin:-6px 0 20px}
+.grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+@media(max-width:820px){.grid{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.grid{grid-template-columns:1fr}}
+.panel{position:relative;background:var(--panel);border:1px solid var(--line);padding:16px 18px}
+.label{color:var(--text-dim);font-size:10px;letter-spacing:3px;text-transform:uppercase;margin-bottom:10px}
+.time{font-size:42px;font-weight:700;color:var(--green);letter-spacing:2px;line-height:1}
+.blink{animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.date{margin-top:8px;font-size:12px}
+.day{margin-top:2px;font-size:11px;color:var(--text-dim);text-transform:uppercase}
+.tz-row{margin-top:12px;display:flex;gap:14px;font-size:10px;color:var(--text-dim);border-top:1px dashed var(--line);padding-top:10px}
+.tz-row b{color:var(--text);font-weight:normal}
+.weather-body{display:flex;align-items:center;gap:14px;margin-top:8px}
+.temp-big{font-size:36px;font-weight:700;color:var(--amber);line-height:1}
+.cond{font-size:11px;letter-spacing:1px;text-transform:uppercase}
+.loc-name{font-size:10px;color:var(--text-dim);margin-top:2px}
+.stat-row{margin-top:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;border-top:1px dashed var(--line);padding-top:10px}
+.stat{font-size:9px;color:var(--text-dim);letter-spacing:1px;text-transform:uppercase}
+.stat b{display:block;font-size:13px;color:var(--text);font-weight:700;margin-top:2px}
+.weather-search{display:flex;gap:6px;margin-top:10px}
+.weather-search input,#radioStation{flex:1;background:#0d1210;border:1px solid var(--line);color:var(--text);font-family:inherit;font-size:11px;padding:6px 8px;outline:none}
+.weather-search button,.action-btn,.link-btn{background:transparent;border:1px solid var(--green-dim);color:var(--green);font-family:inherit;font-size:10px;letter-spacing:1px;padding:6px 10px;cursor:pointer;text-transform:uppercase;text-decoration:none}
+.status-line{margin-top:8px;font-size:10px;color:var(--text-dim)}
+.status-line .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);margin-right:6px}
+.status-line.err{color:var(--red)}
+#radioStation{width:100%;margin-top:4px}
+.radio-controls{display:flex;align-items:center;gap:10px;margin-top:12px}
+#radioVolume{flex:1;accent-color:var(--green)}
+#radioPlayer{display:none}
+.projects-panel,.about-panel{grid-column:1/-1}
+.projects-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.project-card{background:#0d1210;border:1px solid var(--line);padding:14px 16px;text-decoration:none;color:inherit;display:block}
+.project-card:hover{border-color:var(--green-dim)}
+.pc-title{color:var(--green);font-size:13px;font-weight:700;letter-spacing:1px;margin-bottom:4px}
+.pc-desc{font-size:11px;color:var(--text-dim);line-height:1.4}
+.pc-tag{display:inline-block;margin-top:8px;font-size:9px;letter-spacing:1px;color:var(--amber);text-transform:uppercase}
+.about-text{font-size:13px;line-height:1.55}
+.about-text p+p{margin-top:10px}
+.links-row{margin-top:16px;display:flex;flex-wrap:wrap;gap:10px}
+.footer{margin-top:22px;text-align:center;font-size:10px;color:var(--text-dim);letter-spacing:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topline">
+    <h1 class="brand">// BOSSMAN</h1>
+    <div class="sub" id="statusClock">SYNCING...</div>
+  </div>
+  <div class="hero-play">
+    <a class="link-btn" href="https://bossmancom.github.io/anis-arcade/">Play Ani's Arcade</a>
+    <a class="link-btn" href="https://github.com/BossmanCom">GitHub</a>
+  </div>
+  <div class="grid">
+    <div class="panel">
+      <div class="label">Local Time</div>
+      <div class="time" id="timeDisplay">00:00<span class="blink">:00</span></div>
+      <div class="date" id="dateDisplay">-- -- ----</div>
+      <div class="day" id="dayDisplay">-</div>
+      <div class="tz-row"><span>TZ <b id="tzName">-</b></span><span>UTC <b id="utcOffset">-</b></span></div>
+    </div>
+    <div class="panel">
+      <div class="label">Weather Feed</div>
+      <div class="weather-body">
+        <div class="temp-big" id="tempDisplay">--°</div>
+        <div>
+          <div class="cond" id="condDisplay">ACQUIRING...</div>
+          <div class="loc-name" id="locDisplay">Brantford, Ontario</div>
+        </div>
+      </div>
+      <div class="stat-row">
+        <div class="stat">Feels Like<b id="feelsDisplay">--</b></div>
+        <div class="stat">Humidity<b id="humidDisplay">--</b></div>
+        <div class="stat">Wind<b id="windDisplay">--</b></div>
+      </div>
+      <div class="weather-search">
+        <input type="text" id="weatherQuery" placeholder="Search city..." autocomplete="off">
+        <button id="weatherSearchBtn">GO</button>
+      </div>
+      <div class="status-line" id="weatherStatus"><span class="dot"></span>CONNECTING...</div>
+    </div>
+    <div class="panel">
+      <div class="label">Radio Feed</div>
+      <select id="radioStation">
+        <option value="">— select station —</option>
+        <option value="https://ice1.somafm.com/groovesalad-128-mp3">Groove Salad — Ambient</option>
+        <option value="https://ice1.somafm.com/seventies-128-mp3">Left Coast 70s</option>
+        <option value="https://ice1.somafm.com/illstreet-128-mp3">Illinois Street Lounge</option>
+        <option value="https://ice1.somafm.com/suburbsofgoa-128-mp3">Suburbs of Goa</option>
+        <option value="https://ice1.somafm.com/bootliquor-128-mp3">Boot Liquor</option>
+        <option value="https://ice1.somafm.com/poptron-128-mp3">PopTron</option>
+        <option value="https://ice1.somafm.com/7soul-128-mp3">Seven Inch Soul</option>
+        <option value="https://ice1.somafm.com/secretagent-128-mp3">Secret Agent</option>
+      </select>
+      <div class="radio-controls">
+        <button class="action-btn" id="radioPlayBtn">▶ PLAY</button>
+        <input type="range" id="radioVolume" min="0" max="100" value="70">
+      </div>
+      <audio id="radioPlayer" preload="none"></audio>
+      <div class="status-line" id="radioStatus">STOPPED</div>
+    </div>
+    <div class="panel projects-panel">
+      <div class="label">Projects // Modules</div>
+      <div class="projects-grid">
+        <a class="project-card" href="https://bossmancom.github.io/anis-arcade/"><div class="pc-title">ANI'S ARCADE</div><div class="pc-desc">Four pixel cabinets under one roof. Runner, Snake, Tower, Chrono Tail Rush.</div><div class="pc-tag">Arcade Hub</div></a>
+        <a class="project-card" href="https://bossmancom.github.io/chrono-tail-rush/"><div class="pc-title">CHRONO TAIL RUSH</div><div class="pc-desc">Pixel flyer across shifting eras. Pick Ani, Cat Girl, or Red Elf.</div><div class="pc-tag">Canvas Game</div></a>
+        <a class="project-card" href="https://bossmancom.github.io/ani-adventure/"><div class="pc-title">ANI ADVENTURE</div><div class="pc-desc">Click-based 2D adventure with rooms, shops, and save.</div><div class="pc-tag">Adventure</div></a>
+        <a class="project-card" href="https://bossmancom.github.io/kiitsune_blackjack/"><div class="pc-title">KITSUNE BLACKJACK</div><div class="pc-desc">Blackjack with a kitsune twist and odds table.</div><div class="pc-tag">Card Game</div></a>
+        <a class="project-card" href="https://bossmancom.github.io/scary-classroom-hide-seek/"><div class="pc-title">SCARY CLASSROOM</div><div class="pc-desc">Low-poly hide-and-seek horror. Three.js. Desktop + mobile.</div><div class="pc-tag">Horror</div></a>
+        <a class="project-card" href="https://bossmancom.github.io/soft-night-screensaver/"><div class="pc-title">SOFT NIGHT</div><div class="pc-desc">Quiet A-Frame lanterns and fog. Pair with the castle scene.</div><div class="pc-tag">3D / Scenes</div></a>
+        <a class="project-card" href="https://bossmancom.github.io/medieval-castle/"><div class="pc-title">MEDIEVAL CASTLE</div><div class="pc-desc">A-Frame walkaround. Kept with Soft Night as the 3D pair.</div><div class="pc-tag">3D / Scenes</div></a>
+        <a class="project-card" href="https://github.com/BossmanCom/gamefox"><div class="pc-title">GAMEFOX</div><div class="pc-desc">Defensive vulnerability scanner for game projects you own.</div><div class="pc-tag">Rust CLI</div></a>
+      </div>
+    </div>
+    <div class="panel about-panel">
+      <div class="label">Status // About</div>
+      <div class="about-text">
+        <p>Junior canvas / vanilla JS from Brantford, Ontario. Small games that run in a browser with no build step.</p>
+        <p>Three shipped arcade titles live in Ani's Arcade — Pixel Fox Runner, Fox Snake, Fox Tower Defense — plus Chrono Tail Rush. Also an adventure, a kitsune card table, A-Frame scenes, and GameFox (defensive scanner only).</p>
+      </div>
+      <div class="links-row">
+        <a class="link-btn" href="https://bossmancom.github.io/anis-arcade/">Arcade</a>
+        <a class="link-btn" href="https://github.com/BossmanCom">GitHub</a>
+        <a class="link-btn" href="https://x.com/BossmanCom74811">X</a>
+        <a class="link-btn" href="https://homewithlance.blogspot.com/">Journal</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer">STATION ONLINE · RADIO: SOMAFM</div>
+</div>
+<script src="station.js"></script>
+</body>
+</html>
