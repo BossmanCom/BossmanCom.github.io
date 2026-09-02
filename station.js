@@ -6,19 +6,15 @@ function updateClock(){
   const m = pad(now.getMinutes());
   const s = pad(now.getSeconds());
   document.getElementById('timeDisplay').innerHTML = `${h}:${m}<span class="blink">:${s}</span>`;
-
   document.getElementById('dateDisplay').textContent = now.toLocaleDateString(undefined, { year:'numeric', month:'short', day:'2-digit' });
   document.getElementById('dayDisplay').textContent = now.toLocaleDateString(undefined, { weekday:'long' });
-
   const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
   document.getElementById('tzName').textContent = tz;
-
   const offsetMin = -now.getTimezoneOffset();
   const sign = offsetMin >= 0 ? '+' : '-';
   const offH = pad(Math.floor(Math.abs(offsetMin)/60));
   const offM = pad(Math.abs(offsetMin)%60);
   document.getElementById('utcOffset').textContent = `${sign}${offH}:${offM}`;
-
   document.getElementById('statusClock').textContent = 'SYSTEM TIME OK';
 }
 updateClock();
@@ -48,18 +44,13 @@ async function loadWeather(lat = weatherLat, lon = weatherLon, label = weatherLa
     if(!res.ok) throw new Error('forecast failed');
     const data = await res.json();
     const c = data.current;
-
     document.getElementById('tempDisplay').textContent = `${Math.round(c.temperature_2m)}°C`;
     document.getElementById('feelsDisplay').textContent = `${Math.round(c.apparent_temperature)}°C`;
     document.getElementById('humidDisplay').textContent = `${Math.round(c.relative_humidity_2m)}%`;
     document.getElementById('windDisplay').textContent = `${Math.round(c.wind_speed_10m)} km/h`;
     document.getElementById('condDisplay').textContent = weatherCodeMap[c.weather_code] || 'UNKNOWN';
     document.getElementById('locDisplay').textContent = label;
-
-    weatherLat = lat;
-    weatherLon = lon;
-    weatherLabel = label;
-
+    weatherLat = lat; weatherLon = lon; weatherLabel = label;
     status.innerHTML = '<span class="dot"></span>LIVE — OPEN-METEO';
     status.classList.remove('err');
   } catch(err) {
@@ -79,7 +70,7 @@ async function searchWeather(){
   status.innerHTML = '<span class="dot"></span>LOCATING...';
   status.classList.remove('err');
   try {
-    const geoUrl = `https://geocoding-api.open-meteo.com/v1.search?name=${encodeURIComponent(q)}&count=1&language=en&format=json`;
+    const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=1&language=en&format=json`;
     const geoRes = await fetch(geoUrl);
     if(!geoRes.ok) throw new Error('geocode failed');
     const geo = await geoRes.json();
@@ -110,50 +101,31 @@ const radioStation = document.getElementById('radioStation');
 const radioPlayBtn = document.getElementById('radioPlayBtn');
 const radioVolume = document.getElementById('radioVolume');
 const radioStatus = document.getElementById('radioStatus');
-
 radioPlayer.volume = radioVolume.value / 100;
-
-radioVolume.addEventListener('input', () => {
-  radioPlayer.volume = radioVolume.value / 100;
-});
-
+radioVolume.addEventListener('input', () => { radioPlayer.volume = radioVolume.value / 100; });
 radioStation.addEventListener('change', () => {
   const url = radioStation.value;
   if(!url){
-    radioPlayer.pause();
-    radioPlayer.src = '';
-    radioPlayBtn.textContent = '▶ PLAY';
-    radioStatus.textContent = 'STOPPED';
-    return;
+    radioPlayer.pause(); radioPlayer.src = '';
+    radioPlayBtn.textContent = '▶ PLAY'; radioStatus.textContent = 'STOPPED'; return;
   }
   radioPlayer.src = url;
   radioPlayer.play().then(() => {
     radioPlayBtn.textContent = '⏸ PAUSE';
     radioStatus.textContent = `PLAYING — ${radioStation.options[radioStation.selectedIndex].text}`;
-  }).catch(() => {
-    radioStatus.textContent = 'PRESS PLAY TO START';
-  });
+  }).catch(() => { radioStatus.textContent = 'PRESS PLAY TO START'; });
 });
-
 radioPlayBtn.addEventListener('click', () => {
-  if(!radioStation.value){
-    radioStatus.textContent = 'SELECT A STATION FIRST';
-    return;
-  }
+  if(!radioStation.value){ radioStatus.textContent = 'SELECT A STATION FIRST'; return; }
   if(radioPlayer.paused){
     if(!radioPlayer.src) radioPlayer.src = radioStation.value;
     radioPlayer.play().then(() => {
       radioPlayBtn.textContent = '⏸ PAUSE';
       radioStatus.textContent = `PLAYING — ${radioStation.options[radioStation.selectedIndex].text}`;
-    }).catch(() => {
-      radioStatus.textContent = 'PLAYBACK BLOCKED — TRY AGAIN';
-    });
+    }).catch(() => { radioStatus.textContent = 'PLAYBACK BLOCKED — TRY AGAIN'; });
   } else {
-    radioPlayer.pause();
-    radioPlayBtn.textContent = '▶ PLAY';
-    radioStatus.textContent = 'PAUSED';
+    radioPlayer.pause(); radioPlayBtn.textContent = '▶ PLAY'; radioStatus.textContent = 'PAUSED';
   }
 });
-
 radioPlayer.addEventListener('waiting', () => { radioStatus.textContent = 'BUFFERING...'; });
 radioPlayer.addEventListener('error', () => { radioStatus.textContent = 'STREAM ERROR — TRY ANOTHER STATION'; });
